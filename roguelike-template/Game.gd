@@ -56,7 +56,7 @@ func try_fix(typefix):
 			f.fix(typefix) 
 			if f.is_fixed:
 				brokenItems = brokenItems - 1
-	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems-1))
+	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
 
 func try_move(dx, dy):
 	var x = player_tile.x + dx
@@ -76,7 +76,7 @@ func try_move(dx, dy):
 func _ready():
 	OS.set_window_size(Vector2(1024, 576))
 	build_level()
-	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems-1))
+	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
 
 func build_level():
 	rooms.clear()
@@ -119,7 +119,7 @@ class FurnitureReference extends Reference:
 	var repair_array: Array
 	var current_reqired_repair: int
 	var type: int
-	var is_damaged: bool = true
+	var is_damaged: bool = false
 	var is_fixed: bool = true
 	
 	func fix(type_fix):

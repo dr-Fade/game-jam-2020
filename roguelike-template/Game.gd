@@ -21,6 +21,7 @@ enum Tile {
 var map = []
 var rooms = []
 var furniture = []
+var brokenItems: int = 0
 # Events
 
 onready var tile_map = $TileMap
@@ -40,6 +41,20 @@ func _input(event: InputEvent):
 		try_move(0,-1)
 	elif event.is_action("Down"):
 		try_move(0,1)
+	elif event.is_action("FixHammer"):
+		try_fix(0)
+	elif event.is_action("FixTape"):
+		try_fix(1)
+	elif event.is_action("FixScrew"):
+		try_fix(2)
+
+func try_fix(typefix):
+	for f in furniture:
+		if f.tile.x == player_tile.x && f.tile.y == player_tile.y :
+			f.fix()
+			brokenItems = brokenItems - 1
+	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
+
 
 func try_move(dx, dy):
 	var x = player_tile.x + dx
@@ -59,6 +74,7 @@ func try_move(dx, dy):
 func _ready():
 	OS.set_window_size(Vector2(1024, 576))
 	build_level()
+	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
 
 func build_level():	
 	rooms.clear()
@@ -80,6 +96,7 @@ func build_level():
 			break
 	
 	place_furniture()
+	brake_furniture()
 	connect_rooms()
 	
 	var start_room = rooms.front()
@@ -101,17 +118,19 @@ class FurnitureReference extends Reference:
 	
 	func fix():
 		is_damaged = false
+		sprite_node.frame = sprite_node.frame - 3
 	
 	func damage():
 		is_damaged = true
-	
+		sprite_node.frame = sprite_node.frame + 3
+		
 	func destroy():
 		is_fixable = false
 	
 	func _init(game, x: int, y: int, type: int, tile_size: int):
 		tile = Vector2(x,y)
 		sprite_node = FurnitureScene.instance()
-		sprite_node.frame = type
+		sprite_node.frame=type;
 		sprite_node.position = tile * tile_size
 		game.add_child(sprite_node)
 	
@@ -129,6 +148,15 @@ func place_furniture():
 				if randi()%100 > 90:
 					furniture.append(FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE))
 
+func brake_furniture():
+	var cntbroken: int = 0
+	for fur in furniture:
+		if randi() % 2 == 1:
+			fur.damage()
+			cntbroken += 1
+	brokenItems = cntbroken
+	
+	
 func connect_rooms():
 	var stone_graph = AStar.new()
 	var point_id = 0

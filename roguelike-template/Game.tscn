@@ -68,17 +68,17 @@ drag_margin_bottom = 0.0
 
 [node name="ColorRect" type="ColorRect" parent="TimeAndProgress"]
 margin_left = 2.0
-margin_top = 4.0
+margin_top = 4.9025
 margin_right = 171.0
-margin_bottom = 50.0
+margin_bottom = 50.9025
 rect_pivot_offset = Vector2( 125.385, 49.1634 )
 color = Color( 0.858824, 0.623529, 0.317647, 0.588235 )
 
 [node name="Fix" type="Label" parent="TimeAndProgress/ColorRect"]
-margin_left = 2.70155
-margin_top = 23.6601
-margin_right = 93.7015
-margin_bottom = 37.6601
+margin_left = 2.21387
+margin_top = 23.1724
+margin_right = 93.2139
+margin_bottom = 37.1724
 rect_pivot_offset = Vector2( 122.684, 25.5033 )
 text = "To fix percent:"
 
@@ -101,10 +101,15 @@ script = ExtResource( 6 )
 wait_time = 0.1
 autostart = true
 
+[node name="FixedItems" type="RichTextLabel" parent="TimeAndProgress"]
+margin_left = 99.3204
+margin_top = 28.5821
+margin_right = 149.32
+margin_bottom = 43.5821
+
 [node name="ItemsAndControl" type="CanvasLayer" parent="."]
 
 [node name="BackgroundItems" type="ColorRect" parent="ItemsAndControl"]
-editor/display_folded = true
 margin_left = 804.958
 margin_top = 497.0
 margin_right = 1022.96
@@ -116,34 +121,34 @@ position = Vector2( 183.067, 30.8429 )
 texture = ExtResource( 7 )
 
 [node name="PressBtn3" type="Label" parent="ItemsAndControl/BackgroundItems/Tape"]
-margin_left = -37.5736
-margin_top = 31.9396
-margin_right = 32.4264
-margin_bottom = 45.9396
+margin_left = -26.7218
+margin_top = 32.0
+margin_right = 20.2782
+margin_bottom = 46.0
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
-text = "Press:Btn3"
+text = "Press:L"
 
 [node name="Screwdrive" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 103.094, 35.706 )
 texture = ExtResource( 8 )
 
 [node name="PressBtn2" type="Label" parent="ItemsAndControl/BackgroundItems/Screwdrive"]
-margin_left = -30.549
-margin_top = 26.5362
-margin_right = 39.451
-margin_bottom = 40.5362
+margin_left = -19.0
+margin_top = 27.0
+margin_right = 31.0
+margin_bottom = 41.0
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
-text = "Press:Btn2"
+text = "Press:K"
 
 [node name="Hammer" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 43.4083, 35.9632 )
 texture = ExtResource( 9 )
 
 [node name="PressBtn1" type="Label" parent="ItemsAndControl/BackgroundItems/Hammer"]
-margin_left = -41.8964
-margin_top = 29.473
-margin_right = 28.1036
-margin_bottom = 43.473
+margin_left = -27.0195
+margin_top = 27.0
+margin_right = 17.9805
+margin_bottom = 41.0
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
-text = "Press:Btn1"
+text = "Press:J"
 [connection signal="timeout" from="TimeAndProgress/TimerDispayer/Timer" to="TimeAndProgress/TimerDispayer" method="_on_Timer_timeout"]

@@ -4,7 +4,7 @@ extends Node2D
 # var a = 2
 # var b = "text"
 
-# Consts
+# Preloads
 
 const LEVEL_ROOM_COUNT = 5
 const MIN_ROOM_DIMENSION = 8
@@ -20,19 +20,18 @@ enum Tile {
 
 var map = []
 var rooms = []
-
-var player_tile
-
-# Nodes
+var furniture = []
+# Events
 
 onready var tile_map = $TileMap
 onready var player = $Player
+var player_tile
+const FurnitureScene = preload("res://Furniture.tscn")
 
-# Events
-
-func _input(event):
+func _input(event: InputEvent):
 	if !event.is_pressed():
 		return
+
 	if event.is_action("Left"):
 		try_move(-1,0)
 	elif event.is_action("Right"):
@@ -61,10 +60,12 @@ func _ready():
 	OS.set_window_size(Vector2(1024, 576))
 	build_level()
 
-func build_level():
+func build_level():	
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
+	
+	randomize()
 	
 	for x in range(LEVEL_SIZE.x):
 		map.append([])
@@ -78,16 +79,55 @@ func build_level():
 		if free_regions.empty():
 			break
 	
+	place_furniture()
 	connect_rooms()
 	
 	var start_room = rooms.front()
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
+	
 	update_visuals()
 
 func update_visuals():
 	player.position = player_tile * TILE_SIZE
+
+class FurnitureReference extends Reference:
+	var tile: Vector2
+	var sprite_node: Node2D
+	var type: int
+	var is_damaged: bool = true
+	var is_fixable: bool = true
+	
+	func fix():
+		is_damaged = false
+	
+	func damage():
+		is_damaged = true
+	
+	func destroy():
+		is_fixable = false
+	
+	func _init(game, x: int, y: int, type: int, tile_size: int):
+		tile = Vector2(x,y)
+		sprite_node = FurnitureScene.instance()
+		sprite_node.frame = type
+		sprite_node.position = tile * tile_size
+		game.add_child(sprite_node)
+	
+	func _remove():
+		sprite_node.queue_free()
+
+func place_furniture():
+	furniture.clear()
+	for room in rooms:
+		#Rect2(start_x, start_y, size_x, size_y)
+		var top_left = Vector2(room.position.x + 1, room.position.y + 1) 
+		var bottom_right = Vector2(room.end.x - 1, room.end.y - 1)
+		for x in range(top_left.x, bottom_right.x):
+			for y in range(top_left.y, bottom_right.y):
+				if randi()%100 > 90:
+					furniture.append(FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE))
 
 func connect_rooms():
 	var stone_graph = AStar.new()
@@ -262,6 +302,5 @@ func cut_regions(free_regions, region_to_remove):
 func set_tile(x,y,type):
 	map[x][y] = type
 	tile_map.set_cell(x, y, type)
-# Called every frame. 'delta' is the time since the previous frame.
+
 #func _process(delta):
-#	pass

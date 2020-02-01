@@ -1,13 +1,14 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Game.gd" type="Script" id=1]
 [ext_resource path="res://graphics/Floor.png" type="Texture" id=2]
 [ext_resource path="res://graphics/Stone.png" type="Texture" id=3]
 [ext_resource path="res://graphics/Wall.png" type="Texture" id=4]
 [ext_resource path="res://graphics/Player.png" type="Texture" id=5]
-[ext_resource path="res://graphics/Tape.png" type="Texture" id=6]
-[ext_resource path="res://graphics/Screwdrive.png" type="Texture" id=7]
-[ext_resource path="res://graphics/Hammer.png" type="Texture" id=8]
+[ext_resource path="res://TimerDispayer.gd" type="Script" id=6]
+[ext_resource path="res://graphics/Tape.png" type="Texture" id=7]
+[ext_resource path="res://graphics/Screwdrive.png" type="Texture" id=8]
+[ext_resource path="res://graphics/Hammer.png" type="Texture" id=9]
 
 [sub_resource type="TileSet" id=1]
 0/name = "Floor.png 0"
@@ -67,8 +68,9 @@ drag_margin_bottom = 0.0
 
 [node name="ColorRect" type="ColorRect" parent="TimeAndProgress"]
 margin_left = 2.0
-margin_right = 185.0
-margin_bottom = 40.0
+margin_top = 4.0
+margin_right = 171.0
+margin_bottom = 50.0
 rect_pivot_offset = Vector2( 125.385, 49.1634 )
 color = Color( 0.858824, 0.623529, 0.317647, 0.588235 )
 
@@ -88,9 +90,21 @@ margin_bottom = 18.7854
 rect_pivot_offset = Vector2( 122.171, 44.3781 )
 text = "Time:"
 
+[node name="TimerDispayer" type="RichTextLabel" parent="TimeAndProgress"]
+margin_left = 42.6594
+margin_top = 5.0
+margin_right = 139.659
+margin_bottom = 25.0
+script = ExtResource( 6 )
+
+[node name="Timer" type="Timer" parent="TimeAndProgress/TimerDispayer"]
+wait_time = 0.1
+autostart = true
+
 [node name="ItemsAndControl" type="CanvasLayer" parent="."]
 
 [node name="BackgroundItems" type="ColorRect" parent="ItemsAndControl"]
+editor/display_folded = true
 margin_left = 804.958
 margin_top = 497.0
 margin_right = 1022.96
@@ -99,7 +113,7 @@ color = Color( 0.972549, 0.627451, 0.141176, 0.486275 )
 
 [node name="Tape" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 183.067, 30.8429 )
-texture = ExtResource( 6 )
+texture = ExtResource( 7 )
 
 [node name="PressBtn3" type="Label" parent="ItemsAndControl/BackgroundItems/Tape"]
 margin_left = -37.5736
@@ -111,7 +125,7 @@ text = "Press:Btn3"
 
 [node name="Screwdrive" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 103.094, 35.706 )
-texture = ExtResource( 7 )
+texture = ExtResource( 8 )
 
 [node name="PressBtn2" type="Label" parent="ItemsAndControl/BackgroundItems/Screwdrive"]
 margin_left = -30.549
@@ -123,7 +137,7 @@ text = "Press:Btn2"
 
 [node name="Hammer" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 43.4083, 35.9632 )
-texture = ExtResource( 8 )
+texture = ExtResource( 9 )
 
 [node name="PressBtn1" type="Label" parent="ItemsAndControl/BackgroundItems/Hammer"]
 margin_left = -41.8964
@@ -132,3 +146,4 @@ margin_right = 28.1036
 margin_bottom = 43.473
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
 text = "Press:Btn1"
+[connection signal="timeout" from="TimeAndProgress/TimerDispayer/Timer" to="TimeAndProgress/TimerDispayer" method="_on_Timer_timeout"]

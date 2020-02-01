@@ -6,10 +6,10 @@ extends Node2D
 
 # Consts
 
-const LEVEL_ROOM_COUNT = 4
-const MIN_ROOM_DIMENSION = 6
+const LEVEL_ROOM_COUNT = 5
+const MIN_ROOM_DIMENSION = 8
 const MAX_ROOM_DIMENSION = 8
-const LEVEL_SIZE = Vector2(50,50)
+const LEVEL_SIZE = Vector2(80,80)
 const TILE_SIZE = 64
 
 enum Tile {
@@ -58,7 +58,7 @@ func try_move(dx, dy):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	OS.set_window_size(Vector2(800, 600))
+	OS.set_window_size(Vector2(1024, 576))
 	build_level()
 
 func build_level():

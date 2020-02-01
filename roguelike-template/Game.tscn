@@ -1,10 +1,13 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Game.gd" type="Script" id=1]
 [ext_resource path="res://graphics/Floor.png" type="Texture" id=2]
 [ext_resource path="res://graphics/Stone.png" type="Texture" id=3]
 [ext_resource path="res://graphics/Wall.png" type="Texture" id=4]
-[ext_resource path="res://graphics/player.png" type="Texture" id=5]
+[ext_resource path="res://graphics/Player.png" type="Texture" id=5]
+[ext_resource path="res://graphics/Tape.png" type="Texture" id=6]
+[ext_resource path="res://graphics/Screwdrive.png" type="Texture" id=7]
+[ext_resource path="res://graphics/Hammer.png" type="Texture" id=8]
 
 [sub_resource type="TileSet" id=1]
 0/name = "Floor.png 0"
@@ -42,16 +45,17 @@
 script = ExtResource( 1 )
 
 [node name="TileMap" type="TileMap" parent="."]
+position = Vector2( 0.0394135, 0.37907 )
 tile_set = SubResource( 1 )
 format = 1
 
 [node name="Player" type="Sprite" parent="."]
-position = Vector2( 128, 64 )
+position = Vector2( 453.203, 176.801 )
 texture = ExtResource( 5 )
 offset = Vector2( 32, 32 )
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
-position = Vector2( 32, 32 )
+position = Vector2( 28.1229, 26.8306 )
 offset = Vector2( 32, 32 )
 current = true
 drag_margin_left = 0.0
@@ -59,3 +63,72 @@ drag_margin_top = 0.0
 drag_margin_right = 0.0
 drag_margin_bottom = 0.0
 
+[node name="TimeAndProgress" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="TimeAndProgress"]
+margin_left = 2.0
+margin_right = 185.0
+margin_bottom = 40.0
+rect_pivot_offset = Vector2( 125.385, 49.1634 )
+color = Color( 0.858824, 0.623529, 0.317647, 0.588235 )
+
+[node name="Fix" type="Label" parent="TimeAndProgress/ColorRect"]
+margin_left = 2.70155
+margin_top = 23.6601
+margin_right = 93.7015
+margin_bottom = 37.6601
+rect_pivot_offset = Vector2( 122.684, 25.5033 )
+text = "To fix percent:"
+
+[node name="Time" type="Label" parent="TimeAndProgress/ColorRect"]
+margin_left = 3.21464
+margin_top = 4.78536
+margin_right = 41.2146
+margin_bottom = 18.7854
+rect_pivot_offset = Vector2( 122.171, 44.3781 )
+text = "Time:"
+
+[node name="ItemsAndControl" type="CanvasLayer" parent="."]
+
+[node name="BackgroundItems" type="ColorRect" parent="ItemsAndControl"]
+margin_left = 804.958
+margin_top = 497.0
+margin_right = 1022.96
+margin_bottom = 576.0
+color = Color( 0.972549, 0.627451, 0.141176, 0.486275 )
+
+[node name="Tape" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
+position = Vector2( 183.067, 30.8429 )
+texture = ExtResource( 6 )
+
+[node name="PressBtn3" type="Label" parent="ItemsAndControl/BackgroundItems/Tape"]
+margin_left = -37.5736
+margin_top = 31.9396
+margin_right = 32.4264
+margin_bottom = 45.9396
+rect_pivot_offset = Vector2( 39.451, 1.77704 )
+text = "Press:Btn3"
+
+[node name="Screwdrive" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
+position = Vector2( 103.094, 35.706 )
+texture = ExtResource( 7 )
+
+[node name="PressBtn2" type="Label" parent="ItemsAndControl/BackgroundItems/Screwdrive"]
+margin_left = -30.549
+margin_top = 26.5362
+margin_right = 39.451
+margin_bottom = 40.5362
+rect_pivot_offset = Vector2( 39.451, 1.77704 )
+text = "Press:Btn2"
+
+[node name="Hammer" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
+position = Vector2( 43.4083, 35.9632 )
+texture = ExtResource( 8 )
+
+[node name="PressBtn1" type="Label" parent="ItemsAndControl/BackgroundItems/Hammer"]
+margin_left = -41.8964
+margin_top = 29.473
+margin_right = 28.1036
+margin_bottom = 43.473
+rect_pivot_offset = Vector2( 39.451, 1.77704 )
+text = "Press:Btn1"

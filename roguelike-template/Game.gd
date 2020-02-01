@@ -6,10 +6,11 @@ extends Node2D
 
 # Preloads
 
-const LEVEL_ROOM_COUNT = 5
-const MIN_ROOM_DIMENSION = 8
-const MAX_ROOM_DIMENSION = 8
-const LEVEL_SIZE = Vector2(80,80)
+var LEVEL_ROOM_COUNT
+const MIN_ROOM_DIMENSION = 5
+const MAX_ROOM_DIMENSION = 10
+const BORDER_SIZE = 1
+const LEVEL_SIZE = Vector2(50,50)
 const TILE_SIZE = 64
 
 enum Tile {
@@ -22,6 +23,7 @@ var map = []
 var rooms = []
 var furniture = []
 var brokenItems: int = 0
+
 # Events
 
 onready var tile_map = $TileMap
@@ -77,6 +79,7 @@ func _ready():
 	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
 
 func build_level():	
+	LEVEL_ROOM_COUNT = (LEVEL_SIZE.x / MAX_ROOM_DIMENSION) * (LEVEL_SIZE.y / MAX_ROOM_DIMENSION) 
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
@@ -89,7 +92,7 @@ func build_level():
 			map[x].append(Tile.Stone)
 			tile_map.set_cell(x, y, Tile.Stone)
 	
-	var free_regions = [Rect2(Vector2(2,2), LEVEL_SIZE - Vector2(4,4))]
+	var free_regions = [Rect2(Vector2(BORDER_SIZE,BORDER_SIZE), LEVEL_SIZE - Vector2(BORDER_SIZE, BORDER_SIZE))]
 	for i in range(LEVEL_ROOM_COUNT):
 		add_room(free_regions)
 		if free_regions.empty():
@@ -106,7 +109,7 @@ func build_level():
 	
 	update_visuals()
 
-func update_visuals():
+func update_visuals() -> void:
 	player.position = player_tile * TILE_SIZE
 
 class FurnitureReference extends Reference:
@@ -262,70 +265,55 @@ func pick_random_door_location(room):
 	
 	return options[randi() % options.size()]
 
-func add_room(free_regions):
+func add_room(free_regions: Array) -> void:
 	var region = free_regions[randi() % free_regions.size()]
+
+	var room_start = Vector2(
+		region.position.x,# + randi() % int(region.size.x) - MIN_ROOM_DIMENSION, 
+		region.position.y# + randi() % int(region.size.y) - MIN_ROOM_DIMENSION
+	)
 	
-	var size_x = MIN_ROOM_DIMENSION
-	if region.size.x > MIN_ROOM_DIMENSION:
-		size_x += randi() % int(region.size.x - MIN_ROOM_DIMENSION)
+	var room_size = Vector2(
+		MIN_ROOM_DIMENSION + randi() % (MAX_ROOM_DIMENSION - MIN_ROOM_DIMENSION),
+		MIN_ROOM_DIMENSION + randi() % (MAX_ROOM_DIMENSION - MIN_ROOM_DIMENSION)
+	)
 	
-	var size_y = MIN_ROOM_DIMENSION
-	if region.size.y > MIN_ROOM_DIMENSION:
-		size_y += randi() % int(region.size.y - MIN_ROOM_DIMENSION)
+	if region.end.x <= room_start.x + room_size.x:
+		room_size.x = region.end.x - (room_start.x + room_size.x) 
 	
-	size_x = min(size_x, MAX_ROOM_DIMENSION)
-	size_y = min(size_y, MAX_ROOM_DIMENSION)
+	if region.end.y <= room_start.y + room_size.y:
+		room_size.y = region.end.y - (room_start.y + room_size.y)
 	
-	var start_x = region.position.x
-	if region.size.x > size_x:
-		start_x += randi() % int(region.size.x - size_x)
-	
-	var start_y = region.position.y
-	if region.size.y > size_y:
-		start_y += randi() % int(region.size.y - size_y)
-	
-	var room = Rect2(start_x, start_y, size_x, size_y)
+	if room_size.x < MIN_ROOM_DIMENSION || room_size.y < MIN_ROOM_DIMENSION:
+		print("WTF???")
+		
+	var room = Rect2(room_start.x, room_start.y, room_size.x, room_size.y)
 	rooms.append(room)
 	
-	for x in range(start_x, start_x + size_x):
-		set_tile(x, start_y, Tile.Wall)
-		set_tile(x, start_y + size_y - 1, Tile.Wall)
+	for x in range(room_start.x, room_start.x + room_size.x):
+		set_tile(x, room_start.y, Tile.Wall)
+		set_tile(x, room_start.y + room_size.y - 1, Tile.Wall)
 	
-	for y in range(start_y + 1, start_y + size_y - 1):
-		set_tile(start_x, y, Tile.Wall)
-		set_tile(start_x + size_x - 1, y, Tile.Wall)
-		for x in range(start_x + 1, start_x + size_x - 1):
+	for y in range(room_start.y + 1, room_start.y + room_size.y - 1):
+		set_tile(room_start.x, y, Tile.Wall)
+		set_tile(room_start.x + room_size.x - 1, y, Tile.Wall)
+		for x in range(room_start.x + 1, room_start.x + room_size.x - 1):
 			set_tile(x, y, Tile.Floor)
 	
-	cut_regions(free_regions, room)
+	cut_regions(free_regions)
 
-func cut_regions(free_regions, region_to_remove):
-	var removal_queue = []
-	var addition_queue = []
-	
-	for region in free_regions:
-		if region.intersects(region_to_remove):
-			removal_queue.append(region)
-			
-			var leftover_right = region_to_remove.position.x - region.position.x - 1
-			var leftover_left = region.end.x - region_to_remove.end.x - 1
-			var leftover_above = region_to_remove.position.y - region.position.y - 1
-			var leftover_below = region.position.y - region_to_remove.end.y - 1
-			
-			if leftover_left >= MAX_ROOM_DIMENSION:
-				addition_queue.append(Rect2(region.position, Vector2(leftover_left, region.size.y)))
-			if leftover_right >= MAX_ROOM_DIMENSION:
-				addition_queue.append(Rect2(Vector2(region_to_remove.end.x + 1, region.position.y), Vector2(leftover_right, region.size.y)))
-			if leftover_above >= MAX_ROOM_DIMENSION:
-				addition_queue.append(Rect2(region.position, Vector2(region.size.x, leftover_above)))
-			if leftover_below >= MAX_ROOM_DIMENSION:
-				addition_queue.append(Rect2(Vector2(region.position.x, region_to_remove.end.y + 1), Vector2(region.size.x, leftover_below)))
-	
-	for region in removal_queue:
-		free_regions.erase(region)
-	
-	for region in addition_queue:
-		free_regions.append(region)
+func cut_regions(free_regions):
+	free_regions.clear()
+	for grid_x in range(BORDER_SIZE, LEVEL_SIZE.x - MAX_ROOM_DIMENSION, MAX_ROOM_DIMENSION):
+		for grid_y in range(BORDER_SIZE, LEVEL_SIZE.y - MAX_ROOM_DIMENSION, MAX_ROOM_DIMENSION):
+			var grid_cell = Rect2(grid_x, grid_y, grid_x + MAX_ROOM_DIMENSION, grid_y + MAX_ROOM_DIMENSION)
+			var is_valid = true
+			for room in rooms:
+				if room.intersects(grid_cell):
+					is_valid = false
+					break
+			if is_valid:
+				free_regions.append(grid_cell)
 
 func set_tile(x,y,type):
 	map[x][y] = type

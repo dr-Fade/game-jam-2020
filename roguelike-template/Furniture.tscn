@@ -1,10 +1,23 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://graphics/Furniture.png" type="Texture" id=1]
+[ext_resource path="res://graphics/FixPopups.png" type="Texture" id=2]
 
 [node name="Furniture" type="Sprite"]
-position = Vector2( 400, 87 )
+position = Vector2( 401.053, 88.0526 )
 texture = ExtResource( 1 )
 offset = Vector2( 32, 32 )
 vframes = 2
 hframes = 3
+
+[node name="FurniturePopup" type="Sprite" parent="."]
+position = Vector2( 0, 0.323532 )
+texture = ExtResource( 2 )
+offset = Vector2( -8, -8 )
+hframes = 3
+
+[node name="FixSteps" type="RichTextLabel" parent="."]
+margin_left = 24.0
+margin_top = -19.0
+margin_right = 58.0
+margin_bottom = -4.0

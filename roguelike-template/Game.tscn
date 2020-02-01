@@ -80,7 +80,7 @@ margin_top = 23.1724
 margin_right = 93.2139
 margin_bottom = 37.1724
 rect_pivot_offset = Vector2( 122.684, 25.5033 )
-text = "To fix percent:"
+text = "Broken furniture:"
 
 [node name="Time" type="Label" parent="TimeAndProgress/ColorRect"]
 margin_left = 3.21464
@@ -102,10 +102,10 @@ wait_time = 0.1
 autostart = true
 
 [node name="FixedItems" type="RichTextLabel" parent="TimeAndProgress"]
-margin_left = 99.3204
-margin_top = 28.5821
-margin_right = 149.32
-margin_bottom = 43.5821
+margin_left = 112.826
+margin_top = 27.7877
+margin_right = 162.825
+margin_bottom = 42.7877
 
 [node name="ItemsAndControl" type="CanvasLayer" parent="."]
 

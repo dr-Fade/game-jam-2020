@@ -17,6 +17,10 @@ enum Tile {
 	Floor, Stone, Wall
 }
 
+enum Repair {
+	Hammer=0, Screw=1, Tape=2
+}
+
 # Current level
 
 var map = []
@@ -44,18 +48,20 @@ func _input(event: InputEvent):
 	elif event.is_action("Down"):
 		try_move(0,1)
 	elif event.is_action("FixHammer"):
-		try_fix(0)
-	elif event.is_action("FixTape"):
-		try_fix(1)
+		try_fix(Repair.Hammer)
 	elif event.is_action("FixScrew"):
-		try_fix(2)
+		try_fix(Repair.Screw)
+	elif event.is_action("FixTape"):
+		try_fix(Repair.Tape)
+
 
 func try_fix(typefix):
 	for f in furniture:
-		if f.tile.x == player_tile.x && f.tile.y == player_tile.y :
-			f.fix()
-			brokenItems = brokenItems - 1
-	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
+		if f.tile.x == player_tile.x && f.tile.y == player_tile.y && f.is_damaged :
+			f.fix(typefix) 
+			if f.is_fixed:
+				brokenItems = brokenItems - 1
+	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems-1))
 
 
 func try_move(dx, dy):
@@ -76,7 +82,7 @@ func try_move(dx, dy):
 func _ready():
 	OS.set_window_size(Vector2(1024, 576))
 	build_level()
-	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
+	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems-1))
 
 func build_level():	
 	LEVEL_ROOM_COUNT = (LEVEL_SIZE.x / MAX_ROOM_DIMENSION) * (LEVEL_SIZE.y / MAX_ROOM_DIMENSION) 
@@ -114,25 +120,63 @@ func update_visuals() -> void:
 
 class FurnitureReference extends Reference:
 	var tile: Vector2
+	var oridginal_repair_array_size: int
+	var performed_array_repair_size: int
 	var sprite_node: Node2D
+	var popup_node: Node2D
+	var richtext_node: RichTextLabel
+	var repair_array: Array
+	var current_reqired_repair: int
 	var type: int
 	var is_damaged: bool = true
-	var is_fixable: bool = true
+	var is_fixed: bool = true
 	
-	func fix():
-		is_damaged = false
-		sprite_node.frame = sprite_node.frame - 3
+	func fix(type_fix):
+		if type_fix == current_reqired_repair :
+			if repair_array.size() == 0 :
+				is_fixed = true
+				is_damaged = false
+				popup_node.hide()
+				performed_array_repair_size = performed_array_repair_size + 1
+				richtext_node.set_text(str(performed_array_repair_size)+"/"+str(oridginal_repair_array_size))
+				sprite_node.frame = sprite_node.frame - 3
+			else:
+				current_reqired_repair = repair_array.front()
+				popup_node.frame=current_reqired_repair
+				repair_array.pop_front()
+				performed_array_repair_size = performed_array_repair_size + 1
+				richtext_node.set_text(str(performed_array_repair_size)+"/"+str(oridginal_repair_array_size))
+				
+
+		
 	
 	func damage():
+		is_fixed = false
 		is_damaged = true
 		sprite_node.frame = sprite_node.frame + 3
+		var repair_array_size = randi() % 7 + 1
+		oridginal_repair_array_size = repair_array_size+1
+		for repair in range(0, repair_array_size):
+			repair_array.append(randi() % 3)
+		current_reqired_repair = repair_array.front()
+		popup_node.show()
+		popup_node.frame=current_reqired_repair
+		richtext_node.show()
+		richtext_node.set_text(str(performed_array_repair_size)+"/"+str(oridginal_repair_array_size))
 		
 	func destroy():
-		is_fixable = false
+		is_fixed = false
 	
-	func _init(game, x: int, y: int, type: int, tile_size: int):
+	func _init(game, x: int, y: int, type: int, tile_size: int , r_array: Array):
 		tile = Vector2(x,y)
-		sprite_node = FurnitureScene.instance()
+		repair_array=r_array
+		oridginal_repair_array_size = 0
+		sprite_node = FurnitureScene.instance() 
+		popup_node = sprite_node.get_child(0)
+		popup_node.hide()
+		richtext_node = sprite_node.get_child(1)
+		richtext_node.hide()
+		performed_array_repair_size = 0
 		sprite_node.frame=type;
 		sprite_node.position = tile * tile_size
 		game.add_child(sprite_node)
@@ -149,7 +193,8 @@ func place_furniture():
 		for x in range(top_left.x, bottom_right.x):
 			for y in range(top_left.y, bottom_right.y):
 				if randi()%100 > 90:
-					furniture.append(FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE))
+					var r_arrray = []
+					furniture.append(FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE, r_arrray))
 
 func brake_furniture():
 	var cntbroken: int = 0

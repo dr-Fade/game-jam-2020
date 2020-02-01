@@ -1,15 +1,10 @@
 extends Node2D
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
 # Preloads
 
-var LEVEL_ROOM_COUNT
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 10
-const BORDER_SIZE = 1
+const BORDER_SIZE = 2
 const LEVEL_SIZE = Vector2(50,50)
 const TILE_SIZE = 64
 
@@ -63,7 +58,6 @@ func try_fix(typefix):
 				brokenItems = brokenItems - 1
 	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems-1))
 
-
 func try_move(dx, dy):
 	var x = player_tile.x + dx
 	var y = player_tile.y + dy
@@ -84,8 +78,7 @@ func _ready():
 	build_level()
 	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems-1))
 
-func build_level():	
-	LEVEL_ROOM_COUNT = (LEVEL_SIZE.x / MAX_ROOM_DIMENSION) * (LEVEL_SIZE.y / MAX_ROOM_DIMENSION) 
+func build_level():
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
@@ -99,13 +92,11 @@ func build_level():
 			tile_map.set_cell(x, y, Tile.Stone)
 	
 	var free_regions = [Rect2(Vector2(BORDER_SIZE,BORDER_SIZE), LEVEL_SIZE - Vector2(BORDER_SIZE, BORDER_SIZE))]
-	for i in range(LEVEL_ROOM_COUNT):
+	while !free_regions.empty():
 		add_room(free_regions)
-		if free_regions.empty():
-			break
 	
 	place_furniture()
-	brake_furniture()
+	break_furniture()
 	connect_rooms()
 	
 	var start_room = rooms.front()
@@ -196,7 +187,7 @@ func place_furniture():
 					var r_arrray = []
 					furniture.append(FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE, r_arrray))
 
-func brake_furniture():
+func break_furniture():
 	var cntbroken: int = 0
 	for fur in furniture:
 		if randi() % 2 == 1:
@@ -302,7 +293,7 @@ func pick_random_door_location(room):
 	
 	for x in range(room.position.x + 1, room.end.x - 2):
 		options.append(Vector3(x, room.position.y, 0))
-		options.append(Vector3(x, room.end.y, 0))
+		options.append(Vector3(x, room.end.y - 1, 0))
 	
 	for y in range(room.position.y + 1, room.end.y - 2):
 		options.append(Vector3(room.position.x, y, 0))
@@ -314,8 +305,8 @@ func add_room(free_regions: Array) -> void:
 	var region = free_regions[randi() % free_regions.size()]
 
 	var room_start = Vector2(
-		region.position.x,# + randi() % int(region.size.x) - MIN_ROOM_DIMENSION, 
-		region.position.y# + randi() % int(region.size.y) - MIN_ROOM_DIMENSION
+		region.position.x, 
+		region.position.y
 	)
 	
 	var room_size = Vector2(

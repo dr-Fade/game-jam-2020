@@ -2,14 +2,15 @@ extends Node2D
 
 # Preloads
 
+const WINDOW_SIZE = Vector2(1024, 576)
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 10
 const BORDER_SIZE = 2
 const LEVEL_SIZE = Vector2(50,50)
 const TILE_SIZE = 64
 const MONSTER_SIGHT = MIN_ROOM_DIMENSION
-const MONSTER_ATTACK = 20
-const DEBUFF_ACTIVATION_THRESHOLD = 60
+const MONSTER_ATTACK = 30
+const DEBUFF_ACTIVATION_THRESHOLD = 80
 
 enum Tile {
 	Floor, Stone, Wall
@@ -39,20 +40,25 @@ onready var Monsters = load("res://Monsters.gd").new()
 const FurnitureScene = preload("res://Furniture.tscn")
 
 onready var oof = load("res://audio/oof.wav")
-onready var whispers = load("res://audio/whispers.wav")
+onready var whispers = load("res://audio/whispers.ogg")
 onready var clock = load("res://audio/clock.ogg")
 onready var hammer = load("res://audio/hammer.wav")
 onready var screwdriver = load("res://audio/screwdriver.wav")
 onready var ducttape = load("res://audio/ducttape.wav")
 
-onready var anger_debuff_value = get_node("ItemsAndControl/Debuffs/AngerValue")
-onready var fear_debuff_value = get_node("ItemsAndControl/Debuffs/FearValue")
-onready var apathy_debuff_value = get_node("ItemsAndControl/Debuffs/ApathyValue")
+onready var anger_debuff_value = get_node("UI/HUD/Debuffs/AngerValue")
+onready var fear_debuff_value = get_node("UI/HUD/Debuffs/FearValue")
+onready var apathy_debuff_value = get_node("UI/HUD/Debuffs/ApathyValue")
 
 # Events
 
 func _input(event: InputEvent):
 	if !event.is_pressed():
+		return
+	
+	if event.is_action("ToggleMenu"):
+		toggle_menu()
+	if $UI/MenuOverlay.visible:
 		return
 
 	if event.is_action("Left"):
@@ -85,12 +91,28 @@ func try_fix(type_of_fix):
 			if f.is_fixed:
 				broken_items = broken_items - 1
 			break
-	get_node("TimeAndProgress/FixedItems").set_text(str(broken_items))
+	$UI/HUD/FixedItems.set_text(str(broken_items))
+	if broken_items == 0:
+		$UI/MenuOverlay/Label.text = "You won!"
+		$UI/MenuOverlay/Continue.disabled = true
+		toggle_menu()
 
 func try_move(dx, dy):
 	for type in Monsters.Type.values():
 		if debuffs[type] > 0:
 			debuffs[type] -= 1
+	
+	if debuffs[Monsters.Type.Fear] > 0:
+		randomize()
+		if randi() % DEBUFF_ACTIVATION_THRESHOLD > debuffs[Monsters.Type.Fear]:
+			dx = randi() % 3 - 1
+			dy = randi() % 3 - 1
+	
+	if debuffs[Monsters.Type.Anger] > 0:
+		randomize()
+		if randi() % DEBUFF_ACTIVATION_THRESHOLD > debuffs[Monsters.Type.Anger]:
+			dx *= 2
+			dy *= 2
 	
 	var x = player_tile.x + dx
 	var y = player_tile.y + dy
@@ -98,7 +120,7 @@ func try_move(dx, dy):
 	var tile_type = Tile.Stone
 	if x >= 0 && x < LEVEL_SIZE.x && y >=0 && y < LEVEL_SIZE.y:
 		tile_type = map[x][y]
-	
+		
 	if tile_type == Tile.Floor:
 		if debuffs[Monsters.Type.Apathy] > 0:
 			randomize()
@@ -109,7 +131,7 @@ func try_move(dx, dy):
 	
 	var player_point = floor_graph.get_closest_point(Vector3(player_tile.x, player_tile.y, 0))
 	for monster in monsters:
-		if monster.tile.x != x || monster.tile.y != y:
+		if monster.tile.x != player_tile.x || monster.tile.y != player_tile.y:
 			var monster_point = floor_graph.get_closest_point(Vector3(monster.tile.x, monster.tile.y, 0))
 			var path = floor_graph.get_point_path(monster_point, player_point)
 			if path && path.size() < MONSTER_SIGHT && randi() % 100 > 10:
@@ -124,36 +146,49 @@ func try_move(dx, dy):
 			monsters.erase(monster)
 	var whispers_volume = -50
 	for debuff in debuffs:
-		if whispers_volume >= 0:
+		if whispers_volume >= 5:
 			break
 		whispers_volume += debuff
 	$Fx/Whisper.volume_db = whispers_volume
 	update_visuals()
 
-# Called when the node enters the scene tree for the first time.
+func toggle_menu():
+	$UI/MenuOverlay.visible = !$UI/MenuOverlay.visible
+
+# Called when the node enters the scene tree for the first time1.
 func _ready():
-	OS.set_window_size(Vector2(1024, 576))
+	OS.set_window_size(WINDOW_SIZE)
 	build_level()
 	init_sound()
-	get_node("TimeAndProgress/FixedItems").set_text(str(broken_items))
 
 func init_sound():
-#	whispers.loop_mode = 1
-#
-#	$Fx/Whisper.stream = whispers
-#	$Fx/Whisper.volume_db = -50
-#	$Fx/Whisper.play()
+	whispers.loop = 1
+	
+	$Fx/Whisper.stream = whispers
+	$Fx/Whisper.volume_db = -50
+	$Fx/Whisper.play()
 	
 	clock.loop = 1
-
+	
 	$Fx/Clock.stream = clock
-	$Fx/Clock.volume_db = +10
+	$Fx/Clock.volume_db = 0
 	$Fx/Clock.play()
 
 func build_level():
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
+	
+	for f in furniture:
+		f.remove()
+	furniture.clear()
+	
+	for monster in monsters:
+		monster.remove()
+	monsters.clear()
+	
+	$UI/HUD
+	debuffs = [0,0,0]
 	
 	randomize()
 	
@@ -178,12 +213,15 @@ func build_level():
 	player_tile = Vector2(player_x, player_y)
 	
 	update_visuals()
+	$UI/MenuOverlay/Label.text = "Menu"
+	$UI/MenuOverlay/Continue.disabled = false
 
 func update_visuals() -> void:
 	player.position = player_tile * TILE_SIZE
 	anger_debuff_value.set_text(str(debuffs[Monsters.Type.Anger]))
 	fear_debuff_value.set_text(str(debuffs[Monsters.Type.Fear]))
 	apathy_debuff_value.set_text(str(debuffs[Monsters.Type.Apathy]))
+	get_node("UI/HUD/FixedItems").set_text(str(broken_items))
 
 class FurnitureReference extends Reference:
 	var tile: Vector2
@@ -245,11 +283,13 @@ class FurnitureReference extends Reference:
 		richtext_node = sprite_node.get_child(1)
 		richtext_node.hide()
 		performed_repair_array_size = 0
-		sprite_node.frame=type;
+		sprite_node.frame = type;
 		sprite_node.position = tile * tile_size
 		game.add_child(sprite_node)
 	
 	func remove():
+		sprite_node.get_child(0).queue_free()
+		sprite_node.get_child(1).queue_free()
 		sprite_node.queue_free()
 
 func spawn_furniture():
@@ -270,7 +310,6 @@ func spawn_furniture():
 	broken_items = count_broken
 
 func spawn_monsters():
-	monsters.clear()
 	for room in rooms:
 		if room == rooms.front():
 			continue
@@ -387,6 +426,7 @@ func pick_random_door_location(room):
 	return options[randi() % options.size()]
 
 func create_floor_graph():
+	floor_graph.clear()
 	var point_id = 0
 	for x in range(LEVEL_SIZE.x):
 		for y in range(LEVEL_SIZE.y):
@@ -451,3 +491,18 @@ func set_tile(x,y,type):
 	tile_map.set_cell(x, y, type)
 
 #func _process(delta):
+
+
+func _on_Continue_pressed():
+	toggle_menu()
+
+
+func _on_Play_pressed():
+	$UI/HUD/TimerDispayer.reset_timer()
+	build_level()
+	toggle_menu()
+
+
+func _on_Quit_pressed():
+	get_tree().quit()
+	pass # Replace with function body.

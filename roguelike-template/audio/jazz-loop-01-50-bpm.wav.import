@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/jazz-loop-01-50-bpm.wav-c7c969a7816d0f3b9eb4f504f956f75b.sample"
+
+[deps]
+
+source_file="res://audio/jazz-loop-01-50-bpm.wav"
+dest_files=[ "res://.import/jazz-loop-01-50-bpm.wav-c7c969a7816d0f3b9eb4f504f956f75b.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=true
+edit/normalize=true
+edit/loop=false
+compress/mode=0

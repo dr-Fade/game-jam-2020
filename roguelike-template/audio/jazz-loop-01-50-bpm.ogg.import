@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/jazz-loop-01-50-bpm.ogg-6ee2d77f187c00b4111de59d78fc7212.oggstr"
+
+[deps]
+
+source_file="res://audio/jazz-loop-01-50-bpm.ogg"
+dest_files=[ "res://.import/jazz-loop-01-50-bpm.ogg-6ee2d77f187c00b4111de59d78fc7212.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

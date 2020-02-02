@@ -1,14 +1,16 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://Game.gd" type="Script" id=1]
 [ext_resource path="res://graphics/Floor.png" type="Texture" id=2]
 [ext_resource path="res://graphics/Stone.png" type="Texture" id=3]
 [ext_resource path="res://graphics/Wall.png" type="Texture" id=4]
 [ext_resource path="res://graphics/Player.png" type="Texture" id=5]
-[ext_resource path="res://TimerDispayer.gd" type="Script" id=6]
-[ext_resource path="res://graphics/Tape.png" type="Texture" id=7]
-[ext_resource path="res://graphics/Screwdrive.png" type="Texture" id=8]
-[ext_resource path="res://graphics/Hammer.png" type="Texture" id=9]
+[ext_resource path="res://graphics/OldNewspaperTypes.ttf" type="DynamicFontData" id=6]
+[ext_resource path="res://TimerDisplayer.gd" type="Script" id=7]
+[ext_resource path="res://graphics/Tape.png" type="Texture" id=8]
+[ext_resource path="res://graphics/Screwdrive.png" type="Texture" id=9]
+[ext_resource path="res://graphics/Hammer.png" type="Texture" id=10]
+[ext_resource path="res://audio/jazz-loop-01-50-bpm.ogg" type="AudioStream" id=11]
 
 [sub_resource type="TileSet" id=1]
 0/name = "Floor.png 0"
@@ -42,6 +44,19 @@
 2/shapes = [  ]
 2/z_index = 0
 
+[sub_resource type="DynamicFont" id=2]
+size = 28
+font_data = ExtResource( 6 )
+
+[sub_resource type="DynamicFont" id=3]
+font_data = ExtResource( 6 )
+
+[sub_resource type="DynamicFont" id=4]
+font_data = ExtResource( 6 )
+
+[sub_resource type="DynamicFont" id=5]
+font_data = ExtResource( 6 )
+
 [node name="Game" type="Node2D"]
 script = ExtResource( 1 )
 
@@ -51,12 +66,13 @@ tile_set = SubResource( 1 )
 format = 1
 
 [node name="Player" type="Sprite" parent="."]
+editor/display_folded = true
 position = Vector2( 448, 224 )
 texture = ExtResource( 5 )
 offset = Vector2( 32, 32 )
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
-position = Vector2( 28.1229, 26.8306 )
+position = Vector2( 28.1229, 3.8147e-06 )
 z_index = -1
 offset = Vector2( 32, 32 )
 current = true
@@ -65,15 +81,58 @@ drag_margin_top = 0.0
 drag_margin_right = 0.0
 drag_margin_bottom = 0.0
 
-[node name="TimeAndProgress" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 2
 
-[node name="ColorRect" type="ColorRect" parent="TimeAndProgress"]
+[node name="MenuOverlay" type="ColorRect" parent="UI"]
+margin_left = 2.21387
+margin_right = 1026.21
+margin_bottom = 581.0
+color = Color( 0, 0, 0, 0.784314 )
+
+[node name="Label" type="Label" parent="UI/MenuOverlay"]
+margin_left = 11.0
+margin_top = 64.0
+margin_right = 1009.0
+margin_bottom = 192.0
+custom_fonts/font = SubResource( 2 )
+text = "Menu"
+align = 1
+valign = 1
+
+[node name="Continue" type="Button" parent="UI/MenuOverlay"]
+margin_left = 414.0
+margin_top = 192.0
+margin_right = 606.0
+margin_bottom = 224.0
+custom_fonts/font = SubResource( 3 )
+text = "Continue"
+
+[node name="Play" type="Button" parent="UI/MenuOverlay"]
+margin_left = 414.0
+margin_top = 256.0
+margin_right = 606.0
+margin_bottom = 288.0
+custom_fonts/font = SubResource( 4 )
+text = "Play"
+
+[node name="Quit" type="Button" parent="UI/MenuOverlay"]
+margin_left = 413.786
+margin_top = 320.0
+margin_right = 605.786
+margin_bottom = 352.0
+custom_fonts/font = SubResource( 5 )
+text = "Quit"
+
+[node name="HUD" type="CanvasLayer" parent="UI"]
+
+[node name="ColorRect" type="ColorRect" parent="UI/HUD"]
 margin_right = 169.0
 margin_bottom = 46.0
 rect_pivot_offset = Vector2( 125.385, 49.1634 )
 color = Color( 0.858824, 0.623529, 0.317647, 0.588235 )
 
-[node name="Fix" type="Label" parent="TimeAndProgress/ColorRect"]
+[node name="Fix" type="Label" parent="UI/HUD/ColorRect"]
 margin_left = 2.21387
 margin_top = 23.1724
 margin_right = 110.214
@@ -81,7 +140,7 @@ margin_bottom = 37.1724
 rect_pivot_offset = Vector2( 122.684, 25.5033 )
 text = "Broken furniture:"
 
-[node name="Time" type="Label" parent="TimeAndProgress/ColorRect"]
+[node name="Time" type="Label" parent="UI/HUD/ColorRect"]
 margin_left = 3.21464
 margin_top = 4.78536
 margin_right = 41.2146
@@ -89,37 +148,36 @@ margin_bottom = 18.7854
 rect_pivot_offset = Vector2( 122.171, 44.3781 )
 text = "Time:"
 
-[node name="TimerDispayer" type="RichTextLabel" parent="TimeAndProgress"]
+[node name="TimerDispayer" type="RichTextLabel" parent="UI/HUD"]
 margin_left = 64.0
 margin_top = 4.78536
 margin_right = 161.0
 margin_bottom = 24.7854
-script = ExtResource( 6 )
+script = ExtResource( 7 )
 
-[node name="Timer" type="Timer" parent="TimeAndProgress/TimerDispayer"]
+[node name="Timer" type="Timer" parent="UI/HUD/TimerDispayer"]
 wait_time = 0.1
 autostart = true
 
-[node name="FixedItems" type="RichTextLabel" parent="TimeAndProgress"]
+[node name="FixedItems" type="RichTextLabel" parent="UI/HUD"]
 margin_left = 110.214
 margin_top = 23.1724
 margin_right = 160.213
 margin_bottom = 38.1724
 
-[node name="ItemsAndControl" type="CanvasLayer" parent="."]
-
-[node name="BackgroundItems" type="ColorRect" parent="ItemsAndControl"]
+[node name="BackgroundItems" type="ColorRect" parent="UI/HUD"]
+editor/display_folded = true
 margin_left = 800.0
 margin_top = 494.963
 margin_right = 1018.0
 margin_bottom = 573.963
 color = Color( 0.972549, 0.627451, 0.141176, 0.486275 )
 
-[node name="Tape" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
+[node name="Tape" type="Sprite" parent="UI/HUD/BackgroundItems"]
 position = Vector2( 183.067, 30.8429 )
-texture = ExtResource( 7 )
+texture = ExtResource( 8 )
 
-[node name="PressBtn3" type="Label" parent="ItemsAndControl/BackgroundItems/Tape"]
+[node name="PressBtn3" type="Label" parent="UI/HUD/BackgroundItems/Tape"]
 margin_left = -20.7344
 margin_top = 30.8026
 margin_right = 26.2656
@@ -128,11 +186,11 @@ rect_pivot_offset = Vector2( 39.451, 1.77704 )
 text = "L"
 align = 1
 
-[node name="Screwdrive" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
+[node name="Screwdrive" type="Sprite" parent="UI/HUD/BackgroundItems"]
 position = Vector2( 103.094, 35.706 )
-texture = ExtResource( 8 )
+texture = ExtResource( 9 )
 
-[node name="PressBtn2" type="Label" parent="ItemsAndControl/BackgroundItems/Screwdrive"]
+[node name="PressBtn2" type="Label" parent="UI/HUD/BackgroundItems/Screwdrive"]
 margin_left = -19.0
 margin_top = 27.0
 margin_right = 31.0
@@ -141,11 +199,11 @@ rect_pivot_offset = Vector2( 39.451, 1.77704 )
 text = "K"
 align = 1
 
-[node name="Hammer" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
+[node name="Hammer" type="Sprite" parent="UI/HUD/BackgroundItems"]
 position = Vector2( 43.4083, 35.9632 )
-texture = ExtResource( 9 )
+texture = ExtResource( 10 )
 
-[node name="PressBtn1" type="Label" parent="ItemsAndControl/BackgroundItems/Hammer"]
+[node name="PressBtn1" type="Label" parent="UI/HUD/BackgroundItems/Hammer"]
 margin_left = -27.0195
 margin_top = 27.0
 margin_right = 17.9805
@@ -154,56 +212,60 @@ rect_pivot_offset = Vector2( 39.451, 1.77704 )
 text = "J"
 align = 1
 
-[node name="Debuffs" type="ColorRect" parent="ItemsAndControl"]
+[node name="Debuffs" type="ColorRect" parent="UI/HUD"]
+editor/display_folded = true
 margin_top = 494.963
 margin_right = 218.002
 margin_bottom = 573.963
 color = Color( 0.972549, 0.627451, 0.141176, 0.486275 )
 
-[node name="AngerLabel" type="Label" parent="ItemsAndControl/Debuffs"]
+[node name="AngerLabel" type="Label" parent="UI/HUD/Debuffs"]
 margin_left = 11.2146
 margin_top = 10.0
 margin_right = 82.2146
 margin_bottom = 26.0
 text = "Agression:"
 
-[node name="AngerValue" type="Label" parent="ItemsAndControl/Debuffs"]
+[node name="AngerValue" type="Label" parent="UI/HUD/Debuffs"]
 margin_left = 128.0
 margin_top = 10.0
 margin_right = 199.0
 margin_bottom = 26.0
 
-[node name="FearLabel" type="Label" parent="ItemsAndControl/Debuffs"]
+[node name="FearLabel" type="Label" parent="UI/HUD/Debuffs"]
 margin_left = 11.2146
 margin_top = 30.9632
 margin_right = 82.2146
 margin_bottom = 46.9632
 text = "Fear:"
 
-[node name="FearValue" type="Label" parent="ItemsAndControl/Debuffs"]
+[node name="FearValue" type="Label" parent="UI/HUD/Debuffs"]
 margin_left = 128.0
 margin_top = 30.9632
 margin_right = 199.0
 margin_bottom = 46.9632
 
-[node name="ApathyLabel" type="Label" parent="ItemsAndControl/Debuffs"]
+[node name="ApathyLabel" type="Label" parent="UI/HUD/Debuffs"]
 margin_left = 11.2146
 margin_top = 52.0
 margin_right = 82.2146
 margin_bottom = 68.0
 text = "Apathy:"
 
-[node name="ApathyValue" type="Label" parent="ItemsAndControl/Debuffs"]
+[node name="ApathyValue" type="Label" parent="UI/HUD/Debuffs"]
 margin_left = 128.0
 margin_top = 52.0
 margin_right = 199.0
 margin_bottom = 68.0
 
 [node name="Music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 11 )
 volume_db = -10.0
+autoplay = true
 bus = "Music"
 
 [node name="Fx" type="Node" parent="."]
+editor/display_folded = true
 
 [node name="Clock" type="AudioStreamPlayer" parent="Fx"]
 volume_db = -10.0
@@ -216,4 +278,7 @@ bus = "FX"
 
 [node name="Actions" type="AudioStreamPlayer" parent="Fx"]
 bus = "FX"
-[connection signal="timeout" from="TimeAndProgress/TimerDispayer/Timer" to="TimeAndProgress/TimerDispayer" method="_on_Timer_timeout"]
+[connection signal="pressed" from="UI/MenuOverlay/Continue" to="." method="_on_Continue_pressed"]
+[connection signal="pressed" from="UI/MenuOverlay/Play" to="." method="_on_Play_pressed"]
+[connection signal="pressed" from="UI/MenuOverlay/Quit" to="." method="_on_Quit_pressed"]
+[connection signal="timeout" from="UI/HUD/TimerDispayer/Timer" to="UI/HUD/TimerDispayer" method="_on_Timer_timeout"]

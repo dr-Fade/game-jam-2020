@@ -57,7 +57,8 @@ func _input(event: InputEvent):
 		return
 	
 	if event.is_action("ToggleMenu"):
-		toggle_menu()
+		if $UI/MenuOverlay/Label.text == "Menu":
+			toggle_menu()
 	if $UI/MenuOverlay.visible:
 		return
 

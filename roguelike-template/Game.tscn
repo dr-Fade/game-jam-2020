@@ -120,10 +120,10 @@ position = Vector2( 183.067, 30.8429 )
 texture = ExtResource( 7 )
 
 [node name="PressBtn3" type="Label" parent="ItemsAndControl/BackgroundItems/Tape"]
-margin_left = -26.7218
-margin_top = 32.0
-margin_right = 20.2782
-margin_bottom = 46.0
+margin_left = -20.7344
+margin_top = 30.8026
+margin_right = 26.2656
+margin_bottom = 44.8026
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
 text = "L"
 align = 1

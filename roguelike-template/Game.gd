@@ -213,8 +213,12 @@ class FurnitureReference extends Reference:
 				repair_array.pop_front()
 				performed_repair_array_size += 1
 				richtext_node.set_text(str(performed_repair_array_size)+"/"+str(original_repair_array_size))
+		else :
+			damage()
 	
 	func damage():
+		repair_array.clear()
+		performed_repair_array_size = 0
 		is_fixed = false
 		is_damaged = true
 		sprite_node.frame = sprite_node.frame + 3

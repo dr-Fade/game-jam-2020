@@ -40,7 +40,7 @@ const FurnitureScene = preload("res://Furniture.tscn")
 
 onready var oof = load("res://audio/oof.wav")
 onready var whispers = load("res://audio/whispers.wav")
-onready var clock = load("res://audio/clock.wav")
+onready var clock = load("res://audio/clock.ogg")
 onready var hammer = load("res://audio/hammer.wav")
 onready var screwdriver = load("res://audio/screwdriver.wav")
 onready var ducttape = load("res://audio/ducttape.wav")
@@ -138,16 +138,16 @@ func _ready():
 	get_node("TimeAndProgress/FixedItems").set_text(str(broken_items))
 
 func init_sound():
-	whispers.loop_mode = 1
-	whispers.loop_end = 179137
-	$Fx/Whisper.stream = whispers
-	$Fx/Whisper.volume_db = -50
-	$Fx/Whisper.play()
+#	whispers.loop_mode = 1
+#
+#	$Fx/Whisper.stream = whispers
+#	$Fx/Whisper.volume_db = -50
+#	$Fx/Whisper.play()
 	
-	clock.loop_mode = 1
-	clock.loop_end = 4592440
+	clock.loop = 1
+
 	$Fx/Clock.stream = clock
-	$Fx/Clock.volume_db = -10
+	$Fx/Clock.volume_db = +10
 	$Fx/Clock.play()
 
 func build_level():

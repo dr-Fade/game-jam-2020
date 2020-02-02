@@ -215,5 +215,4 @@ bus = "FX"
 
 [node name="Actions" type="AudioStreamPlayer" parent="Fx"]
 bus = "FX"
-
 [connection signal="timeout" from="TimeAndProgress/TimerDispayer/Timer" to="TimeAndProgress/TimerDispayer" method="_on_Timer_timeout"]

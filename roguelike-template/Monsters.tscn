@@ -7,4 +7,3 @@ position = Vector2( 343.391, 296.629 )
 texture = ExtResource( 1 )
 offset = Vector2( 32, 32 )
 hframes = 3
-

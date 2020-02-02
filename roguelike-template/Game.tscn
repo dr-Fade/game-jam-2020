@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://Game.gd" type="Script" id=1]
 [ext_resource path="res://graphics/Floor.png" type="Texture" id=2]
@@ -10,7 +10,6 @@
 [ext_resource path="res://graphics/Tape.png" type="Texture" id=8]
 [ext_resource path="res://graphics/Screwdrive.png" type="Texture" id=9]
 [ext_resource path="res://graphics/Hammer.png" type="Texture" id=10]
-[ext_resource path="res://audio/jazz-loop-01-50-bpm.ogg" type="AudioStream" id=11]
 
 [sub_resource type="TileSet" id=1]
 0/name = "Floor.png 0"
@@ -259,7 +258,6 @@ margin_right = 199.0
 margin_bottom = 68.0
 
 [node name="Music" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 11 )
 volume_db = -10.0
 autoplay = true
 bus = "Music"

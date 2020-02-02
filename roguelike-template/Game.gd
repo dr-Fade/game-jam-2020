@@ -42,6 +42,7 @@ const FurnitureScene = preload("res://Furniture.tscn")
 onready var oof = load("res://audio/oof.wav")
 onready var whispers = load("res://audio/whispers.ogg")
 onready var clock = load("res://audio/clock.ogg")
+onready var jazz = load("res://audio/jazz-loop-01-50-bpm.ogg")
 onready var hammer = load("res://audio/hammer.wav")
 onready var screwdriver = load("res://audio/screwdriver.wav")
 onready var ducttape = load("res://audio/ducttape.wav")
@@ -174,6 +175,12 @@ func init_sound():
 	$Fx/Clock.stream = clock
 	$Fx/Clock.volume_db = 0
 	$Fx/Clock.play()
+	
+	jazz.loop = 1
+	
+	$Music.stream = jazz
+	$Music.volume_db = -15
+	$Music.play()
 
 func build_level():
 	rooms.clear()

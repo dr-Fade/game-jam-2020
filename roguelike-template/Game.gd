@@ -7,13 +7,16 @@ const MAX_ROOM_DIMENSION = 10
 const BORDER_SIZE = 2
 const LEVEL_SIZE = Vector2(50,50)
 const TILE_SIZE = 64
+const MONSTER_SIGHT = MIN_ROOM_DIMENSION
+const MONSTER_ATTACK = 20
+const DEBUFF_ACTIVATION_THRESHOLD = 60
 
 enum Tile {
 	Floor, Stone, Wall
 }
 
-enum Repair {
-	Hammer=0, Screw=1, Tape=2
+enum Fix {
+	Hammer, Screwdriver, Ducttape
 }
 
 # Current level
@@ -21,14 +24,32 @@ enum Repair {
 var map = []
 var rooms = []
 var furniture = []
-var brokenItems: int = 0
+var monsters = []
+var floor_graph = AStar.new()
+var broken_items: int = 0
 
-# Events
+var player_tile
+var debuffs = [0,0,0]
+
+# Preloads
 
 onready var tile_map = $TileMap
 onready var player = $Player
-var player_tile
+onready var Monsters = load("res://Monsters.gd").new()
 const FurnitureScene = preload("res://Furniture.tscn")
+
+onready var oof = load("res://audio/oof.wav")
+onready var whispers = load("res://audio/whispers.wav")
+onready var clock = load("res://audio/clock.ogg")
+onready var hammer = load("res://audio/hammer.wav")
+onready var screwdriver = load("res://audio/screwdriver.wav")
+onready var ducttape = load("res://audio/ducttape.wav")
+
+onready var anger_debuff_value = get_node("ItemsAndControl/Debuffs/AngerValue")
+onready var fear_debuff_value = get_node("ItemsAndControl/Debuffs/FearValue")
+onready var apathy_debuff_value = get_node("ItemsAndControl/Debuffs/ApathyValue")
+
+# Events
 
 func _input(event: InputEvent):
 	if !event.is_pressed():
@@ -43,22 +64,34 @@ func _input(event: InputEvent):
 	elif event.is_action("Down"):
 		try_move(0,1)
 	elif event.is_action("FixHammer"):
-		try_fix(Repair.Hammer)
+		try_fix(Fix.Hammer)
 	elif event.is_action("FixScrew"):
-		try_fix(Repair.Screw)
+		try_fix(Fix.Screwdriver)
 	elif event.is_action("FixTape"):
-		try_fix(Repair.Tape)
+		try_fix(Fix.Ducttape)
 
-
-func try_fix(typefix):
+func try_fix(type_of_fix):
 	for f in furniture:
-		if f.tile.x == player_tile.x && f.tile.y == player_tile.y && f.is_damaged :
-			f.fix(typefix) 
+		if f.tile == player_tile && f.is_damaged :
+			f.fix(type_of_fix) 
+			match type_of_fix:
+				Fix.Hammer:
+					$Fx/Actions.stream = hammer
+				Fix.Screwdriver:
+					$Fx/Actions.stream = screwdriver
+				Fix.Ducttape:
+					$Fx/Actions.stream = ducttape
+			$Fx/Actions.play()
 			if f.is_fixed:
-				brokenItems = brokenItems - 1
-	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
+				broken_items = broken_items - 1
+			break
+	get_node("TimeAndProgress/FixedItems").set_text(str(broken_items))
 
 func try_move(dx, dy):
+	for type in Monsters.Type.values():
+		if debuffs[type] > 0:
+			debuffs[type] -= 1
+	
 	var x = player_tile.x + dx
 	var y = player_tile.y + dy
 	
@@ -66,17 +99,56 @@ func try_move(dx, dy):
 	if x >= 0 && x < LEVEL_SIZE.x && y >=0 && y < LEVEL_SIZE.y:
 		tile_type = map[x][y]
 	
-	match tile_type:
-		Tile.Floor:
+	if tile_type == Tile.Floor:
+		if debuffs[Monsters.Type.Apathy] > 0:
+			randomize()
+			if randi() % DEBUFF_ACTIVATION_THRESHOLD > debuffs[Monsters.Type.Apathy]:
+				player_tile = Vector2(x,y)
+		else:
 			player_tile = Vector2(x,y)
 	
+	var player_point = floor_graph.get_closest_point(Vector3(player_tile.x, player_tile.y, 0))
+	for monster in monsters:
+		if monster.tile.x != x || monster.tile.y != y:
+			var monster_point = floor_graph.get_closest_point(Vector3(monster.tile.x, monster.tile.y, 0))
+			var path = floor_graph.get_point_path(monster_point, player_point)
+			if path && path.size() < MONSTER_SIGHT && randi() % 100 > 10:
+				monster.tile.x = path[1].x
+				monster.tile.y = path[1].y
+				monster.sprite_node.position = monster.tile * TILE_SIZE
+		if monster.tile.x == player_tile.x && monster.tile.y == player_tile.y:
+			debuffs[monster.type] += MONSTER_ATTACK
+			$Fx/Actions.stream = oof
+			$Fx/Actions.play()
+			monster.remove()
+			monsters.erase(monster)
+	var whispers_volume = -50
+	for debuff in debuffs:
+		if whispers_volume >= 0:
+			break
+		whispers_volume += debuff
+	$Fx/Whisper.volume_db = whispers_volume
 	update_visuals()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	OS.set_window_size(Vector2(1024, 576))
 	build_level()
-	get_node("TimeAndProgress/FixedItems").set_text(str(brokenItems))
+	init_sound()
+	get_node("TimeAndProgress/FixedItems").set_text(str(broken_items))
+
+func init_sound():
+#	whispers.loop_mode = 1
+#
+#	$Fx/Whisper.stream = whispers
+#	$Fx/Whisper.volume_db = -50
+#	$Fx/Whisper.play()
+	
+	clock.loop = 1
+
+	$Fx/Clock.stream = clock
+	$Fx/Clock.volume_db = +10
+	$Fx/Clock.play()
 
 func build_level():
 	rooms.clear()
@@ -95,9 +167,10 @@ func build_level():
 	while !free_regions.empty():
 		add_room(free_regions)
 	
-	place_furniture()
-	break_furniture()
+	spawn_furniture()
+	spawn_monsters()
 	connect_rooms()
+	create_floor_graph()
 	
 	var start_room = rooms.front()
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
@@ -108,52 +181,52 @@ func build_level():
 
 func update_visuals() -> void:
 	player.position = player_tile * TILE_SIZE
+	anger_debuff_value.set_text(str(debuffs[Monsters.Type.Anger]))
+	fear_debuff_value.set_text(str(debuffs[Monsters.Type.Fear]))
+	apathy_debuff_value.set_text(str(debuffs[Monsters.Type.Apathy]))
 
 class FurnitureReference extends Reference:
 	var tile: Vector2
-	var oridginal_repair_array_size: int
-	var performed_array_repair_size: int
+	var original_repair_array_size: int
+	var performed_repair_array_size: int
 	var sprite_node: Node2D
 	var popup_node: Node2D
 	var richtext_node: RichTextLabel
 	var repair_array: Array
-	var current_reqired_repair: int
+	var current_required_repair: int
 	var type: int
 	var is_damaged: bool = false
 	var is_fixed: bool = true
 	
 	func fix(type_fix):
-		if type_fix == current_reqired_repair :
+		if type_fix == current_required_repair:
 			if repair_array.size() == 0 :
 				is_fixed = true
 				is_damaged = false
 				popup_node.hide()
-				performed_array_repair_size = performed_array_repair_size + 1
-				richtext_node.set_text(str(performed_array_repair_size)+"/"+str(oridginal_repair_array_size))
+				performed_repair_array_size += 1
+				richtext_node.set_text(str(performed_repair_array_size)+"/"+str(original_repair_array_size))
 				sprite_node.frame = sprite_node.frame - 3
 			else:
-				current_reqired_repair = repair_array.front()
-				popup_node.frame=current_reqired_repair
+				current_required_repair = repair_array.front()
+				popup_node.frame = current_required_repair
 				repair_array.pop_front()
-				performed_array_repair_size = performed_array_repair_size + 1
-				richtext_node.set_text(str(performed_array_repair_size)+"/"+str(oridginal_repair_array_size))
-				
-
-		
+				performed_repair_array_size += 1
+				richtext_node.set_text(str(performed_repair_array_size)+"/"+str(original_repair_array_size))
 	
 	func damage():
 		is_fixed = false
 		is_damaged = true
 		sprite_node.frame = sprite_node.frame + 3
 		var repair_array_size = randi() % 7 + 1
-		oridginal_repair_array_size = repair_array_size+1
+		original_repair_array_size = repair_array_size+1
 		for repair in range(0, repair_array_size):
 			repair_array.append(randi() % 3)
-		current_reqired_repair = repair_array.front()
+		current_required_repair = repair_array.front()
 		popup_node.show()
-		popup_node.frame=current_reqired_repair
+		popup_node.frame=current_required_repair
 		richtext_node.show()
-		richtext_node.set_text(str(performed_array_repair_size)+"/"+str(oridginal_repair_array_size))
+		richtext_node.set_text(str(performed_repair_array_size)+"/"+str(original_repair_array_size))
 		
 	func destroy():
 		is_fixed = false
@@ -161,41 +234,49 @@ class FurnitureReference extends Reference:
 	func _init(game, x: int, y: int, type: int, tile_size: int , r_array: Array):
 		tile = Vector2(x,y)
 		repair_array=r_array
-		oridginal_repair_array_size = 0
+		original_repair_array_size = 0
 		sprite_node = FurnitureScene.instance() 
 		popup_node = sprite_node.get_child(0)
 		popup_node.hide()
 		richtext_node = sprite_node.get_child(1)
 		richtext_node.hide()
-		performed_array_repair_size = 0
+		performed_repair_array_size = 0
 		sprite_node.frame=type;
 		sprite_node.position = tile * tile_size
 		game.add_child(sprite_node)
 	
-	func _remove():
+	func remove():
 		sprite_node.queue_free()
 
-func place_furniture():
+func spawn_furniture():
 	furniture.clear()
+	var count_broken: int = 0
 	for room in rooms:
 		#Rect2(start_x, start_y, size_x, size_y)
 		var top_left = Vector2(room.position.x + 1, room.position.y + 1) 
 		var bottom_right = Vector2(room.end.x - 1, room.end.y - 1)
 		for x in range(top_left.x, bottom_right.x):
 			for y in range(top_left.y, bottom_right.y):
-				if randi()%100 > 90:
-					var r_arrray = []
-					furniture.append(FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE, r_arrray))
+				if randi() % 100 > 90:
+					var new_furniture = FurnitureReference.new(self, x, y, randi() % 3, TILE_SIZE, [])
+					if randi() % 2 == 1:
+						new_furniture.damage()
+						count_broken += 1
+					furniture.append(new_furniture)
+	broken_items = count_broken
 
-func break_furniture():
-	var cntbroken: int = 0
-	for fur in furniture:
-		if randi() % 2 == 1:
-			fur.damage()
-			cntbroken += 1
-	brokenItems = cntbroken
-	
-	
+func spawn_monsters():
+	monsters.clear()
+	for room in rooms:
+		if room == rooms.front():
+			continue
+		var top_left = Vector2(room.position.x + 1, room.position.y + 1) 
+		var bottom_right = Vector2(room.end.x - 1, room.end.y - 1)
+		for x in range(top_left.x, bottom_right.x):
+			for y in range(top_left.y, bottom_right.y):
+				if randi() % 100 > 95:
+					monsters.append(Monsters.MonsterReference.new(self, x, y, randi() % 3, TILE_SIZE))
+
 func connect_rooms():
 	var stone_graph = AStar.new()
 	var point_id = 0
@@ -301,6 +382,20 @@ func pick_random_door_location(room):
 	
 	return options[randi() % options.size()]
 
+func create_floor_graph():
+	var point_id = 0
+	for x in range(LEVEL_SIZE.x):
+		for y in range(LEVEL_SIZE.y):
+			if map[x][y] == Tile.Floor:
+				floor_graph.add_point(point_id, Vector3(x,y,0))
+				if x > 0 && map[x-1][y] == Tile.Floor:
+					var left_point = floor_graph.get_closest_point(Vector3(x - 1, y, 0))
+					floor_graph.connect_points(point_id, left_point)
+				if y > 0 && map[x][y-1] == Tile.Floor:
+					var above_point = floor_graph.get_closest_point(Vector3(x, y - 1, 0))
+					floor_graph.connect_points(point_id, above_point)
+				point_id += 1
+
 func add_room(free_regions: Array) -> void:
 	var region = free_regions[randi() % free_regions.size()]
 
@@ -319,12 +414,8 @@ func add_room(free_regions: Array) -> void:
 	
 	if region.end.y <= room_start.y + room_size.y:
 		room_size.y = region.end.y - (room_start.y + room_size.y)
-	
-	if room_size.x < MIN_ROOM_DIMENSION || room_size.y < MIN_ROOM_DIMENSION:
-		print("WTF???")
-		
-	var room = Rect2(room_start.x, room_start.y, room_size.x, room_size.y)
-	rooms.append(room)
+
+	rooms.append(Rect2(room_start.x, room_start.y, room_size.x, room_size.y))
 	
 	for x in range(room_start.x, room_start.x + room_size.x):
 		set_tile(x, room_start.y, Tile.Wall)

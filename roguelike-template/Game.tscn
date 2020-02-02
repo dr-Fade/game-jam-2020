@@ -51,7 +51,7 @@ tile_set = SubResource( 1 )
 format = 1
 
 [node name="Player" type="Sprite" parent="."]
-position = Vector2( 453.203, 176.801 )
+position = Vector2( 448, 224 )
 texture = ExtResource( 5 )
 offset = Vector2( 32, 32 )
 
@@ -68,10 +68,8 @@ drag_margin_bottom = 0.0
 [node name="TimeAndProgress" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="TimeAndProgress"]
-margin_left = 2.0
-margin_top = 4.9025
-margin_right = 171.0
-margin_bottom = 50.9025
+margin_right = 169.0
+margin_bottom = 46.0
 rect_pivot_offset = Vector2( 125.385, 49.1634 )
 color = Color( 0.858824, 0.623529, 0.317647, 0.588235 )
 
@@ -92,10 +90,10 @@ rect_pivot_offset = Vector2( 122.171, 44.3781 )
 text = "Time:"
 
 [node name="TimerDispayer" type="RichTextLabel" parent="TimeAndProgress"]
-margin_left = 42.6594
-margin_top = 5.0
-margin_right = 139.659
-margin_bottom = 25.0
+margin_left = 64.0
+margin_top = 4.78536
+margin_right = 161.0
+margin_bottom = 24.7854
 script = ExtResource( 6 )
 
 [node name="Timer" type="Timer" parent="TimeAndProgress/TimerDispayer"]
@@ -103,18 +101,18 @@ wait_time = 0.1
 autostart = true
 
 [node name="FixedItems" type="RichTextLabel" parent="TimeAndProgress"]
-margin_left = 112.826
-margin_top = 27.7877
-margin_right = 162.825
-margin_bottom = 42.7877
+margin_left = 110.214
+margin_top = 23.1724
+margin_right = 160.213
+margin_bottom = 38.1724
 
 [node name="ItemsAndControl" type="CanvasLayer" parent="."]
 
 [node name="BackgroundItems" type="ColorRect" parent="ItemsAndControl"]
-margin_left = 804.958
-margin_top = 497.0
-margin_right = 1022.96
-margin_bottom = 576.0
+margin_left = 800.0
+margin_top = 494.963
+margin_right = 1018.0
+margin_bottom = 573.963
 color = Color( 0.972549, 0.627451, 0.141176, 0.486275 )
 
 [node name="Tape" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
@@ -127,7 +125,8 @@ margin_top = 32.0
 margin_right = 20.2782
 margin_bottom = 46.0
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
-text = "Press:L"
+text = "L"
+align = 1
 
 [node name="Screwdrive" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 103.094, 35.706 )
@@ -139,7 +138,8 @@ margin_top = 27.0
 margin_right = 31.0
 margin_bottom = 41.0
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
-text = "Press:K"
+text = "K"
+align = 1
 
 [node name="Hammer" type="Sprite" parent="ItemsAndControl/BackgroundItems"]
 position = Vector2( 43.4083, 35.9632 )
@@ -151,5 +151,69 @@ margin_top = 27.0
 margin_right = 17.9805
 margin_bottom = 41.0
 rect_pivot_offset = Vector2( 39.451, 1.77704 )
-text = "Press:J"
+text = "J"
+align = 1
+
+[node name="Debuffs" type="ColorRect" parent="ItemsAndControl"]
+margin_top = 494.963
+margin_right = 218.002
+margin_bottom = 573.963
+color = Color( 0.972549, 0.627451, 0.141176, 0.486275 )
+
+[node name="AngerLabel" type="Label" parent="ItemsAndControl/Debuffs"]
+margin_left = 11.2146
+margin_top = 10.0
+margin_right = 82.2146
+margin_bottom = 26.0
+text = "Agression:"
+
+[node name="AngerValue" type="Label" parent="ItemsAndControl/Debuffs"]
+margin_left = 128.0
+margin_top = 10.0
+margin_right = 199.0
+margin_bottom = 26.0
+
+[node name="FearLabel" type="Label" parent="ItemsAndControl/Debuffs"]
+margin_left = 11.2146
+margin_top = 30.9632
+margin_right = 82.2146
+margin_bottom = 46.9632
+text = "Fear:"
+
+[node name="FearValue" type="Label" parent="ItemsAndControl/Debuffs"]
+margin_left = 128.0
+margin_top = 30.9632
+margin_right = 199.0
+margin_bottom = 46.9632
+
+[node name="ApathyLabel" type="Label" parent="ItemsAndControl/Debuffs"]
+margin_left = 11.2146
+margin_top = 52.0
+margin_right = 82.2146
+margin_bottom = 68.0
+text = "Apathy:"
+
+[node name="ApathyValue" type="Label" parent="ItemsAndControl/Debuffs"]
+margin_left = 128.0
+margin_top = 52.0
+margin_right = 199.0
+margin_bottom = 68.0
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+volume_db = -10.0
+bus = "Music"
+
+[node name="Fx" type="Node" parent="."]
+
+[node name="Clock" type="AudioStreamPlayer" parent="Fx"]
+volume_db = -10.0
+autoplay = true
+bus = "FX"
+
+[node name="Whisper" type="AudioStreamPlayer" parent="Fx"]
+autoplay = true
+bus = "FX"
+
+[node name="Actions" type="AudioStreamPlayer" parent="Fx"]
+bus = "FX"
 [connection signal="timeout" from="TimeAndProgress/TimerDispayer/Timer" to="TimeAndProgress/TimerDispayer" method="_on_Timer_timeout"]

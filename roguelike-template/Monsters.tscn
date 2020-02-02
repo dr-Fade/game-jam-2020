@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://graphics/Monsters.png" type="Texture" id=1]
+
+[node name="Monsters" type="Sprite"]
+position = Vector2( 343.391, 296.629 )
+texture = ExtResource( 1 )
+offset = Vector2( 32, 32 )
+hframes = 3

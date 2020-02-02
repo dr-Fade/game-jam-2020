@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/screwdriver.wav-0fa4d4067ec054a446632a29edf2878c.sample"
+
+[deps]
+
+source_file="res://audio/screwdriver.wav"
+dest_files=[ "res://.import/screwdriver.wav-0fa4d4067ec054a446632a29edf2878c.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=true
+edit/normalize=true
+edit/loop=false
+compress/mode=0

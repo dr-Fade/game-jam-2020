@@ -57,6 +57,7 @@ offset = Vector2( 32, 32 )
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2( 28.1229, 26.8306 )
+z_index = -1
 offset = Vector2( 32, 32 )
 current = true
 drag_margin_left = 0.0
@@ -77,7 +78,7 @@ color = Color( 0.858824, 0.623529, 0.317647, 0.588235 )
 [node name="Fix" type="Label" parent="TimeAndProgress/ColorRect"]
 margin_left = 2.21387
 margin_top = 23.1724
-margin_right = 93.2139
+margin_right = 110.214
 margin_bottom = 37.1724
 rect_pivot_offset = Vector2( 122.684, 25.5033 )
 text = "Broken furniture:"
